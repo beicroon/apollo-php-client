@@ -6,6 +6,7 @@ composer require beicroon/apollo-php-client
 ### 使用
 ```php
 use Beicroon\ApolloClient;
+use GuzzleHttp\Exception\GuzzleException;
 
 $server = 'http://127.0.0.1:8080';
 
@@ -20,9 +21,12 @@ $client = ApolloClient::make($server, $appId, $namespaces)
 $env = __DIR__.DIRECTORY_SEPARATOR.'.env';
 
 while (true) {
-    // success
-    if ($client->pull($env)) {
-        //
+    try {
+        if ($client->pull($env)) {
+            // success
+        }
+    } catch (GuzzleException $exception) {
+        // http error
     }
 
     sleep(60);
