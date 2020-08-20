@@ -1,0 +1,24 @@
+{
+    "name": "beicroon/apollo-php-client",
+    "description": "The [ctripcorp/apollo] client for php.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "BeiCroon",
+            "email": "beicroon@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "php": "^7.4",
+        "ext-json": "*",
+        "guzzlehttp/guzzle": "^6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Beicroon\\": "src/"
+        }
+    }
+}
