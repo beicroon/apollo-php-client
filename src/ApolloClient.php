@@ -77,12 +77,9 @@ class ApolloClient
     public function listen(string $file)
     {
         // 获取更新信息
-        if ($notifications = $this->getNotifications()) {
-            // 将更新配置按传入的命名空间排序
-            $notifications = $this->sortNotifications($notifications);
-
+        if ($notifications = $this->compareNotifications()) {
             // 获取变动后的配置
-            if (!empty($environments = $this->getEnvironments($notifications))) {
+            if (!empty($environments = $this->pullEnvironments($this->sortNotifications($notifications)))) {
                 // 写入文件
                 if ($this->putEnvironments($file, $this->filter($environments))) {
                     return true;
@@ -106,7 +103,7 @@ class ApolloClient
 
         foreach ($this->namespaces as $namespace) {
             // 获取最新的数据
-            if ($configurations = $this->getConfigurations($namespace)) {
+            if ($configurations = $this->pullConfigurations($namespace)) {
                 // 写入数组
                 $environments[$namespace] = $configurations;
             }
@@ -114,6 +111,26 @@ class ApolloClient
 
         // 写入文件
         return $this->putEnvironments($file, $this->filter($environments));
+    }
+
+    /**
+     * 获取带命名空间的配置
+     *
+     * @return array
+     */
+    public function getOriginalEnvironments()
+    {
+        return $this->environments;
+    }
+
+    /**
+     * 获取最后的配置信息
+     *
+     * @return array
+     */
+    public function getEnvironments()
+    {
+        return $this->filter($this->environments);
     }
 
     /**
@@ -153,8 +170,6 @@ class ApolloClient
                 $result[$key] = $value;
             }
 
-            ksort($result);
-
             $results[$namespace] = $result;
         }
 
@@ -177,36 +192,12 @@ class ApolloClient
         foreach ($environments as $namespace => $environment) {
             $contents .= "\n##### {$namespace} #####";
 
-            $prefix = null;
-
             foreach ($environment as $key => $value) {
-                if ($prefix !== $name = $this->getName($key)) {
-                    $prefix = $name;
-                    $contents .= "\n# {$name}\n";
-                }
-
                 $contents .= "{$key}={$value}\n";
             }
         }
 
         return file_put_contents($file, $contents);
-    }
-
-    /**
-     * 将配置分组
-     *
-     * @param  string  $key
-     * @return string|null
-     */
-    protected function getName(string $key)
-    {
-        if ($keys = explode('_', $key)) {
-            foreach ($keys as $key) {
-                return $key;
-            }
-        }
-
-        return null;
     }
 
     /**
@@ -218,7 +209,7 @@ class ApolloClient
     protected function mkdir(string $file)
     {
         if (!is_dir($path = dirname($file))) {
-            mkdir($path, 0755);
+            mkdir($path, 0775);
         }
 
         return $path;
@@ -229,13 +220,14 @@ class ApolloClient
      *
      * @param  array  $notifications
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    protected function getEnvironments(array $notifications)
+    protected function pullEnvironments(array $notifications)
     {
         foreach ($notifications as $notification) {
             if (isset($notification['namespaceName'])) {
                 // 获取最新的数据
-                if ($configurations = $this->getConfigurations($namespace = $notification['namespaceName'])) {
+                if ($configurations = $this->pullConfigurations($namespace = $notification['namespaceName'])) {
 
                     // 写入数组
                     $this->environments[$namespace] = $configurations;
@@ -297,7 +289,7 @@ class ApolloClient
      * @return array
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    protected function getConfigurations(string $namespace)
+    protected function pullConfigurations(string $namespace)
     {
         // 获取最新的配置
         $config = $this->httpGet($this->getNotificationUrl($namespace), [
@@ -349,12 +341,12 @@ class ApolloClient
     }
 
     /**
-     * 拉取服务端有变更的命名空间
+     * 比较版本信息
      *
      * @return array|null
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    protected function getNotifications()
+    protected function compareNotifications()
     {
         return $this->httpGet($this->getUrl('/notifications/v2'), [
             'appId' => $this->appId,
