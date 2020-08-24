@@ -74,7 +74,7 @@ class ApolloClient
      * @return bool
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function pull(string $file)
+    public function listen(string $file)
     {
         // 获取更新信息
         if ($notifications = $this->getNotifications()) {
@@ -91,6 +91,16 @@ class ApolloClient
         }
 
         return false;
+    }
+
+    /**
+     * 获取最后的版本信息
+     *
+     * @return array
+     */
+    public function getReleaseKeys()
+    {
+        return $this->releaseKeys;
     }
 
     /**

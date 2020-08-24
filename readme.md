@@ -22,7 +22,7 @@ $env = __DIR__.DIRECTORY_SEPARATOR.'.env';
 
 while (true) {
     try {
-        if ($client->pull($env)) {
+        if ($client->listen($env)) {
             // success
         }
     } catch (GuzzleException $exception) {
