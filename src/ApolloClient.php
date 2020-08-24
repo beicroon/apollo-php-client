@@ -68,7 +68,7 @@ class ApolloClient
     }
 
     /**
-     * 拉取配置写入配置文件
+     * 监听配置变化写入配置文件
      *
      * @param  string  $file
      * @return bool
@@ -91,6 +91,29 @@ class ApolloClient
         }
 
         return false;
+    }
+
+    /**
+     * 直接拉取最新的配置
+     *
+     * @param  string  $file
+     * @return false|int
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function pull(string $file)
+    {
+        $environments = [];
+
+        foreach ($this->namespaces as $namespace) {
+            // 获取最新的数据
+            if ($configurations = $this->getConfigurations($namespace)) {
+                // 写入数组
+                $environments[$namespace] = $configurations;
+            }
+        }
+
+        // 写入文件
+        return $this->putEnvironments($file, $this->filter($environments));
     }
 
     /**
