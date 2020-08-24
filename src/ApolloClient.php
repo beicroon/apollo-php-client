@@ -190,7 +190,7 @@ class ApolloClient
         $contents = '';
 
         foreach ($environments as $namespace => $environment) {
-            $contents .= "\n##### {$namespace} #####";
+            $contents .= "\n##### {$namespace} #####\n";
 
             foreach ($environment as $key => $value) {
                 $contents .= "{$key}={$value}\n";
