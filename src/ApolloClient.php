@@ -103,7 +103,7 @@ class ApolloClient
 
         foreach ($this->namespaces as $namespace) {
             // 获取最新的数据
-            if ($configurations = $this->pullConfigurations($namespace)) {
+            if ($configurations = $this->pullConfigurations($namespace, false)) {
                 // 写入数组
                 $environments[$namespace] = $configurations;
             }
@@ -286,10 +286,11 @@ class ApolloClient
      * 获取命名空间下最新的配置
      *
      * @param  string  $namespace
+     * @param  bool  $cache
      * @return array
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    protected function pullConfigurations(string $namespace)
+    protected function pullConfigurations(string $namespace, bool $cache = true)
     {
         // 获取最新的配置
         $config = $this->httpGet($this->getNotificationUrl($namespace), [
@@ -301,7 +302,7 @@ class ApolloClient
             return [];
         }
 
-        if (isset($config['releaseKey'])) {
+        if ($cache && isset($config['releaseKey'])) {
             $this->releaseKeys[$namespace] = $config['releaseKey'];
         }
 
