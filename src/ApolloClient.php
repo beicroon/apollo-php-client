@@ -114,6 +114,29 @@ class ApolloClient
     }
 
     /**
+     * 获取版本配置
+     *
+     * @return array
+     */
+    public function getNotifications()
+    {
+        return $this->notifications;
+    }
+
+    /**
+     * 设置版本配置
+     *
+     * @param  array  $notifications
+     * @return $this
+     */
+    public function setNotifications(array $notifications)
+    {
+        $this->notifications = $notifications;
+
+        return $this;
+    }
+
+    /**
      * 获取带命名空间的配置
      *
      * @return array
